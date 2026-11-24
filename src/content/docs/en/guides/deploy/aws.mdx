@@ -14,211 +14,117 @@ import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro';
 
 [AWS](https://aws.amazon.com/) is a full-featured web app hosting platform that can be used to deploy an Astro site.
 
-Deploying your project to AWS requires using the [AWS console](https://aws.amazon.com/console/). (Most of these actions can also be done using the [AWS CLI](https://aws.amazon.com/cli/)). This guide will walk you through the steps to deploy your site to AWS using [AWS Amplify](https://aws.amazon.com/amplify/), [S3 static website hosting](https://aws.amazon.com/s3/), and [CloudFront](https://aws.amazon.com/cloudfront/).
+## AWS Amplify
 
-## AWS Amplify 
+[AWS Amplify](https://aws.amazon.com/amplify/) builds and hosts web apps, and can add a backend with a database and sign-in. You can deploy your Astro project as a static site, or as a server-rendered site using the Amplify adapter.
 
-AWS Amplify is a set of purpose-built tools and features that lets frontend web and mobile developers quickly and easily build full-stack applications on AWS. You can either deploy your Astro project as a static site, or as a server-rendered site.
+Before you start, make sure you have AWS credentials for your AWS account, [Node.js](https://nodejs.org/en/download) 22.12 or later, and the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) version 2.35.0 or later.
 
-### Static Site
+### Static site
 
-Your Astro project is a static site by default.
-
-<Steps>
-1. Create a new Amplify Hosting project.
-
-2. Connect your repository to Amplify.
-
-3. Modify your build settings to match your project's build process.
-
-    <PackageManagerTabs>
-    <Fragment slot="pnpm">
-    ```yaml
-    version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm i -g pnpm
-            - pnpm config set store-dir .pnpm-store
-            - pnpm i
-        build:
-          commands:
-            - pnpm run build
-      artifacts:
-        baseDirectory: /dist
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - .pnpm-store/**/*
-    ```
-    </Fragment>
-    <Fragment slot="npm">
-    ```yaml
-    version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm ci
-        build:
-          commands:
-            - npm run build
-      artifacts:
-        baseDirectory: /dist
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-    ```
-    </Fragment>
-    <Fragment slot="yarn">
-    ```yaml
-    version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - yarn install
-        build:
-          commands:
-            - yarn build
-      artifacts:
-        baseDirectory: /dist
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-    ```
-    </Fragment>
-    </PackageManagerTabs>
-</Steps>
-
-Amplify will automatically deploy your website and update it when you push a commit to your repository.
+Your Astro project is a static site by default. You don't need an adapter to deploy a static Astro site to Amplify.
 
 ### Adapter for on-demand rendering
 
-In order to deploy your project as a server-rendered site, you will need to use the third-party, [community-maintained AWS Amplify adapter](https://github.com/alexnguyennz/astro-aws-amplify) and make some changes to your config.
-
-First, install the Amplify adapter.
-
-<PackageManagerTabs>
-  <Fragment slot="pnpm">
-  ```shell
-  pnpm add astro-aws-amplify
-  ```
-  </Fragment>
-  <Fragment slot="npm">
-  ```shell
-  npm install astro-aws-amplify
-  ```
-  </Fragment>
-  <Fragment slot="yarn">
-  ```shell
-  yarn add astro-aws-amplify
-  ```
-  </Fragment>
-</PackageManagerTabs>
-
-Then, in your `astro.config.*` file, add the adapter and set the output to `server`.
-
-```js title="astro.config.mjs" ins={2, 6, 7}
-import { defineConfig } from 'astro/config';
-import awsAmplify from 'astro-aws-amplify';
-
-export default defineConfig({
-  // ...
-  output: "server",
-  adapter: awsAmplify(),
-});
-```
-
-Once the adapter has been installed, you can set up your Amplify project.
+To render pages on demand, add the [Amplify adapter for Astro](https://integ.www.docs.aws.a2z.com/amplify/latest/userguide/astro-support.html).
 
 <Steps>
-1. Create a new Amplify Hosting project.
-
-2. Connect your repository to Amplify.
-
-3. Modify your build settings to match the adapter's build process by either editing the build settings in the AWS console, or by adding an `amplify.yaml` in the root of your project.
+1. Install the adapter.
 
     <PackageManagerTabs>
-    <Fragment slot="pnpm">
-    ```yaml
-    version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm i -g pnpm
-            - pnpm config set store-dir .pnpm-store
-            - pnpm i
-        build:
-          commands:
-            - pnpm run build
-            - mv node_modules ./.amplify-hosting/compute/default
-      artifacts:
-        baseDirectory: .amplify-hosting
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - .pnpm-store/**/*
-    ```
-    </Fragment>
-    <Fragment slot="npm">
-    ```yaml
-    version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - npm ci --cache .npm --prefer-offline
-        build:
-          commands:
-            - npm run build
-            - mv node_modules ./.amplify-hosting/compute/default
-      artifacts:
-        baseDirectory: .amplify-hosting
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - .npm/**/*
-    ```
-    </Fragment>
-    <Fragment slot="yarn">
-    ```yaml
-    version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - yarn install
-        build:
-          commands:
-            - yarn build
-            - mv node_modules ./.amplify-hosting/compute/default
-      artifacts:
-        baseDirectory: .amplify-hosting
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - node_modules/**/*
-    ```
-    </Fragment>
+      <Fragment slot="pnpm">
+      ```shell
+      pnpm add @aws-amplifygen3/adapter-astro
+      ```
+      </Fragment>
+      <Fragment slot="npm">
+      ```shell
+      npm install @aws-amplifygen3/adapter-astro
+      ```
+      </Fragment>
+      <Fragment slot="yarn">
+      ```shell
+      yarn add @aws-amplifygen3/adapter-astro
+      ```
+      </Fragment>
     </PackageManagerTabs>
+
+2. Add the adapter to your `astro.config.*` file.
+
+    ```js title="astro.config.mjs" ins={2, 5}
+    import { defineConfig } from 'astro/config';
+    import amplify from '@aws-amplifygen3/adapter-astro';
+
+    export default defineConfig({
+      adapter: amplify(),
+    });
+    ```
+
+    Then choose which pages are [rendered on demand](/en/guides/on-demand-rendering/). The adapter writes your build to `.amplify/`. Pages that are still prerendered are deployed as static files.
 </Steps>
 
-Amplify will automatically deploy your website and update it when you push a commit to your repository.
-
 <ReadMore>
-  See [AWS's Astro deployment guide](https://docs.aws.amazon.com/amplify/latest/userguide/get-started-astro.html) for more info.
+  See [Amplify's Astro guide](https://integ.www.docs.aws.a2z.com/amplify/latest/userguide/astro-support.html) for more info.
 </ReadMore>
+
+### Deploy with an AI agent
+
+<Steps>
+1. Install the Amplify skill for your AI coding agent, then restart your agent.
+
+    ```shell
+    aws agent-toolkit add-skill --skill-name aws-amplify
+    ```
+
+    The command installs the skill for every supported agent it detects on your machine. To install it for one agent only, add `--agent kiro` or `--agent claude-code`.
+
+2. In your Astro project folder, ask your agent to deploy your site:
+
+    ```text
+    Deploy my Astro site to Amplify and give me the preview URL.
+    ```
+
+    The agent creates the Amplify app and deploys your site to the `preview` environment.
+</Steps>
+
+### Manual deployment
+
+<Steps>
+1. In your project folder, create the Amplify app. Replace `my-app` with the name of your app.
+
+    ```shell
+    aws amplifygen3 create --name my-app
+    ```
+
+    This creates the app in your AWS account and writes an `amplify.jsonc` file with your build settings. Commit `amplify.jsonc` to your repository.
+
+2. Check the output directory in `amplify.jsonc`. With the adapter, keep `"output_directory": ".amplify"`. For a static site without the adapter, set it to `dist`:
+
+    ```jsonc title="amplify.jsonc" ins={6}
+    {
+      "name": "my-app",
+      "deploy": {
+        "install": "npm ci",
+        "build": "npm run build",
+        "output_directory": "dist"
+      }
+    }
+    ```
+
+3. Deploy to the `preview` environment.
+
+    ```shell
+    aws amplifygen3 deploy
+    ```
+
+    When the deploy finishes, it prints your preview URL.
+
+4. When your site works in preview, deploy to `production`.
+
+    ```shell
+    aws amplifygen3 deploy --env production
+    ```
+</Steps>
 
 ## S3 static website hosting
 
