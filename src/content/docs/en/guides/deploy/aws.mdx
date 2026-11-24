@@ -16,20 +16,34 @@ import PackageManagerTabs from '~/components/tabs/PackageManagerTabs.astro';
 
 ## AWS Amplify
 
-[AWS Amplify](https://aws.amazon.com/amplify/) builds and hosts web apps, and can add a backend with a database and sign-in. You can deploy your Astro project as a static site, or as a server-rendered site using the Amplify adapter.
+[AWS Amplify](https://aws.amazon.com/amplify/) builds and hosts web apps, and can add a backend with a database and sign-in. Your Astro project is a static site by default and deploys to Amplify without an adapter. To render pages on demand, add the Amplify adapter.
 
 Before you start, make sure you have AWS credentials for your AWS account, [Node.js](https://nodejs.org/en/download) 22.12 or later, and the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) version 2.35.0 or later.
 
-### Static site
-
-Your Astro project is a static site by default. You don't need an adapter to deploy a static Astro site to Amplify.
-
-### Adapter for on-demand rendering
-
-To render pages on demand, add the [Amplify adapter for Astro](https://integ.www.docs.aws.a2z.com/amplify/latest/userguide/astro-support.html).
+### Deploy with an AI agent
 
 <Steps>
-1. Install the adapter.
+1. Install the Amplify skill for your AI coding agent, then restart your agent.
+
+    ```shell
+    aws agent-toolkit add-skill --skill-name aws-amplify
+    ```
+
+    The command installs the skill for every supported agent it detects on your machine. To install it for one agent only, add `--agent kiro` or `--agent claude-code`.
+
+2. In your Astro project folder, ask your agent to deploy your site:
+
+    ```text
+    Deploy my Astro site to Amplify and give me the preview URL.
+    ```
+
+    The agent creates the Amplify app, adds the Amplify adapter if your site renders pages on demand, and deploys your site to the `preview` environment.
+</Steps>
+
+### Manual deployment
+
+<Steps>
+1. If your site renders pages on demand, install the [Amplify adapter for Astro](https://integ.www.docs.aws.a2z.com/amplify/latest/userguide/astro-support.html) and add it to your `astro.config.*` file. Skip this step for a static site.
 
     <PackageManagerTabs>
       <Fragment slot="pnpm">
@@ -49,8 +63,6 @@ To render pages on demand, add the [Amplify adapter for Astro](https://integ.www
       </Fragment>
     </PackageManagerTabs>
 
-2. Add the adapter to your `astro.config.*` file.
-
     ```js title="astro.config.mjs" ins={2, 5}
     import { defineConfig } from 'astro/config';
     import amplify from '@aws-amplifygen3/adapter-astro';
@@ -60,37 +72,9 @@ To render pages on demand, add the [Amplify adapter for Astro](https://integ.www
     });
     ```
 
-    Then choose which pages are [rendered on demand](/en/guides/on-demand-rendering/). The adapter writes your build to `.amplify/`. Pages that are still prerendered are deployed as static files.
-</Steps>
+    Then choose which pages are [rendered on demand](/en/guides/on-demand-rendering/). Pages that are still prerendered are deployed as static files.
 
-<ReadMore>
-  See [Amplify's Astro guide](https://integ.www.docs.aws.a2z.com/amplify/latest/userguide/astro-support.html) for more info.
-</ReadMore>
-
-### Deploy with an AI agent
-
-<Steps>
-1. Install the Amplify skill for your AI coding agent, then restart your agent.
-
-    ```shell
-    aws agent-toolkit add-skill --skill-name aws-amplify
-    ```
-
-    The command installs the skill for every supported agent it detects on your machine. To install it for one agent only, add `--agent kiro` or `--agent claude-code`.
-
-2. In your Astro project folder, ask your agent to deploy your site:
-
-    ```text
-    Deploy my Astro site to Amplify and give me the preview URL.
-    ```
-
-    The agent creates the Amplify app and deploys your site to the `preview` environment.
-</Steps>
-
-### Manual deployment
-
-<Steps>
-1. In your project folder, create the Amplify app. Replace `my-app` with the name of your app.
+2. In your project folder, create the Amplify app. Replace `my-app` with the name of your app.
 
     ```shell
     aws amplifygen3 create --name my-app
@@ -98,7 +82,7 @@ To render pages on demand, add the [Amplify adapter for Astro](https://integ.www
 
     This creates the app in your AWS account and writes an `amplify.jsonc` file with your build settings. Commit `amplify.jsonc` to your repository.
 
-2. Check the output directory in `amplify.jsonc`. With the adapter, keep `"output_directory": ".amplify"`. For a static site without the adapter, set it to `dist`:
+3. Check the output directory in `amplify.jsonc`. With the adapter, keep `"output_directory": ".amplify"`. For a static site without the adapter, set it to `dist`:
 
     ```jsonc title="amplify.jsonc" ins={6}
     {
@@ -111,7 +95,7 @@ To render pages on demand, add the [Amplify adapter for Astro](https://integ.www
     }
     ```
 
-3. Deploy to the `preview` environment.
+4. Deploy to the `preview` environment.
 
     ```shell
     aws amplifygen3 deploy
@@ -119,12 +103,16 @@ To render pages on demand, add the [Amplify adapter for Astro](https://integ.www
 
     When the deploy finishes, it prints your preview URL.
 
-4. When your site works in preview, deploy to `production`.
+5. When your site works in preview, deploy to `production`.
 
     ```shell
     aws amplifygen3 deploy --env production
     ```
 </Steps>
+
+<ReadMore>
+  See [Amplify's Astro guide](https://integ.www.docs.aws.a2z.com/amplify/latest/userguide/astro-support.html) for more info.
+</ReadMore>
 
 ## S3 static website hosting
 
